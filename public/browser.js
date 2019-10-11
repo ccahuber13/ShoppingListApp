@@ -1,5 +1,33 @@
 console.log('browser.js started');
 
+function itemTemplate() {
+    return `
+        <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
+        <span class="item-text">${item.text}</span>
+        <div>
+        <button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
+        <button data-id="${item._id}" class="delete-me btn btn-danger btn-sm">Delete</button>
+        </div>
+        </li>
+    `;
+};
+
+// Create feature
+let createField = document.getElementById('create-field');
+document.getElementById('create-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    axios.post('/create-item', {text: createField.value}).then( () => {
+        // Create HTML for new item
+        // insertAdjacentHTML('location', 'HTML');
+        // TIP: To keep organized, create a function that builds HTML and run instead of placing HTML directly in insert.
+        document.getElementById('item-list').insertAdjacentHTML('beforeend', itemTemplate());
+    }).catch( () => {
+        console.log('error');
+    });
+
+});;
+
 document.addEventListener('click', (e) => {
     // Delete Feature
     if (e.target.classList.contains('delete-me')) {
