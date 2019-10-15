@@ -89,8 +89,8 @@ app.get('/', (req, res) => {
 app.post('/create-item', (req, res) => {
     // Select this collection in the database. Then perform basic CRUD operations.
     // .insertOne inserts a new document into the DB (objectToCreate, CB Function after it's document is created)
-    db.collection('items').insertOne({text: req.body.text}, () => {
-        res.send('Success');
+    db.collection('items').insertOne({text: req.body.text}, (err, info) => {
+        res.json(info.ops[0]);
     });
     // Send response for completion
   

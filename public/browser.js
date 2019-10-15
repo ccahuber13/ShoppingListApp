@@ -1,6 +1,6 @@
 console.log('browser.js started');
 
-function itemTemplate() {
+function itemTemplate(item) {
     return `
         <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
         <span class="item-text">${item.text}</span>
@@ -17,11 +17,13 @@ let createField = document.getElementById('create-field');
 document.getElementById('create-form').addEventListener('submit', (e) => {
     e.preventDefault();
 
-    axios.post('/create-item', {text: createField.value}).then( () => {
+    axios.post('/create-item', {text: createField.value}).then( (response) => {
         // Create HTML for new item
         // insertAdjacentHTML('location', 'HTML');
         // TIP: To keep organized, create a function that builds HTML and run instead of placing HTML directly in insert.
-        document.getElementById('item-list').insertAdjacentHTML('beforeend', itemTemplate());
+        document.getElementById('item-list').insertAdjacentHTML('beforeend', itemTemplate(response.data));
+        createField.value = '';
+        createField.focus();
     }).catch( () => {
         console.log('error');
     });
