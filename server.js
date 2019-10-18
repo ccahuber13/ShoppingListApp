@@ -9,6 +9,13 @@ let app = express();
 // Create database connection variable. Assigned later using connect method.
 let db;
 
+// Get needed port in Heroku environment
+let port = process.env.PORT;
+// if port is equal to null or nothing assign 3000
+if (port == null || port == "") {
+    port = 3000;
+}
+
 // Makes content of folder public and available from root of our server
 app.use(express.static('public'));
 
@@ -23,7 +30,7 @@ mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: tr
     // When node server is running, listen on this port and listen for requests.
     // When accessing a database, make sure your database connection is established before requests can happen.
     // Good idea to place listen within db connect code block.
-    app.listen(3000);
+    app.listen(port);
 })
 
 // Adds a body object to the req object. So you can get user form data. No enabled by default.
