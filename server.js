@@ -1,6 +1,7 @@
 // This JS requires express
 let express = require('express');
 let mongodb = require('mongodb');
+let sanitizeHTML = require('sanitize-html');
 
 // Creating an express object.
 let app = express();
@@ -29,7 +30,22 @@ mongodb.connect(connectionString, {useNewUrlParser: true, useUnifiedTopology: tr
 app.use(express.urlencoded({extended: false}));
 app.use(express.json());
 
+function passwordProtected(req, res, next) {
+    res.set('WWW-Authenticate', 'Basic realm="Shopping List APP"');
+    console.log(req.headers.authorization);
+    if (req.headers.authorization == 'Basic Y2h1YmVyOmNodWJlcg==') {
+        next();
+    } else {
+        res.status(401).send('Authentication required');
+    };
+    
+};
+
+// Tells express to use this function for all our routes. 
+app.use(passwordProtected);
+
 // When getting this page run this CB function with the express request and response objects as params.
+// You can pass multiple functions in express. Runs in order.
 app.get('/', (req, res) => {
     // Access data base, look for items, find all items, send to array, run this function with err params and the items param.
     db.collection('items').find().toArray( (err, items) => {
@@ -59,20 +75,10 @@ app.get('/', (req, res) => {
                     </div>
                     
                     <ul id="item-list" class="list-group pb-5">
-                    ${items.map( (item) => {
-                        return `
-                                <li class="list-group-item list-group-item-action d-flex align-items-center justify-content-between">
-                                <span class="item-text">${item.text}</span>
-                                <div>
-                                <button data-id="${item._id}" class="edit-me btn btn-secondary btn-sm mr-1">Edit</button>
-                                <button data-id="${item._id}" class="delete-me btn btn-danger btn-sm">Delete</button>
-                                </div>
-                                </li>
-                        `;
-                    }).join('')}
-                    </ul>
-                    
                 </div>
+                <script>
+                let items = ${JSON.stringify(items)}
+                </script>
                 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
                 <script src="/browser.js"></script>
             </body>
@@ -87,9 +93,11 @@ app.get('/', (req, res) => {
 
 // When a post is made to (URL, CB Function) run code.
 app.post('/create-item', (req, res) => {
+    // Use sanitizeHTML module to not allow malicious code to be submitted. HTML or ATTR tags.
+    let safeText = sanitizeHTML(req.body.text, {allowedTags: [], allowedAttributes: {} });
     // Select this collection in the database. Then perform basic CRUD operations.
     // .insertOne inserts a new document into the DB (objectToCreate, CB Function after it's document is created)
-    db.collection('items').insertOne({text: req.body.text}, (err, info) => {
+    db.collection('items').insertOne({text: safeText}, (err, info) => {
         res.json(info.ops[0]);
     });
     // Send response for completion
@@ -99,8 +107,10 @@ app.post('/create-item', (req, res) => {
 
 
 app.post('/update-item', (req, res) => {
+    // Use sanitizeHTML module to not allow malicious code to be submitted. HTML or ATTR tags.
+    let safeText = sanitizeHTML(req.body.text, { allowedTags: [], allowedAttributes: {} });
     // To update doc, use findOneAndUpdate('The Doc to update', What we want to update on that doc , CB Function once action has completed)
-    db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: req.body.text}}, () => {
+    db.collection('items').findOneAndUpdate({_id: new mongodb.ObjectId(req.body.id)}, {$set: {text: safeText}}, () => {
         res.send('Update Complete');
     })
 });

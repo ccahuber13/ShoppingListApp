@@ -12,6 +12,16 @@ function itemTemplate(item) {
     `;
 };
 
+// Intial Page Load Render
+// Map array of items from DB and run our function template builder on each item.
+// Use to join to turn array into a string and remove commas with ''.
+let ourHTML = items.map( (item) => {
+    return itemTemplate(item);
+}).join('');
+// Add in constructed html to our UL list.
+document.getElementById('item-list').insertAdjacentHTML('beforeend', ourHTML)
+console.log(ourHTML);
+
 // Create feature
 let createField = document.getElementById('create-field');
 document.getElementById('create-form').addEventListener('submit', (e) => {
